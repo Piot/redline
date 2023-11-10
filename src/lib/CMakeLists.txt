@@ -2,11 +2,11 @@
 cmake_minimum_required(VERSION 3.16.3)
 
 add_library(redline STATIC 
-  redline_ansi.c
-  redline_edit.c
-  redline_history.c
-  redline_sync.c
-  redline_text_input.c)
+  ansi.c
+  edit.c
+  history.c
+  sync.c
+  text_input.c)
 
 include(Tornado.cmake)
 set_tornado(redline)
