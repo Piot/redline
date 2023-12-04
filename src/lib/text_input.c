@@ -2,14 +2,38 @@
  *  Copyright (c) Peter Bjorklund. All rights reserved. https://github.com/piot/redline
  *  Licensed under the MIT License. See LICENSE in the project root for license information.
  *--------------------------------------------------------------------------------------------------------*/
+#include <fcntl.h>
 #include <redline/text_input.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <string.h>
+#include <sys/select.h>
 #include <tiny-libc/tiny_libc.h>
-#include <fcntl.h>
+#include <unistd.h>
+#include <clog/clog.h>
+
+static bool inputAvailable(const RedlineTextInput* self)
+{
+    fd_set fds;
+    FD_ZERO(&fds);
+    FD_SET(self->stdInFileDescriptor, &fds);
+
+    struct timeval tv;
+    tv.tv_sec = 0;
+    tv.tv_usec = 10;
+
+    int selectResult = select(self->stdInFileDescriptor + 1, &fds, NULL, NULL, &tv);
+    if (selectResult < 0) {
+        CLOG_ERROR("select failed %d", selectResult)
+    }
+    return FD_ISSET(0, &fds);
+}
 
 static int read_key(RedlineTextInput* self)
 {
+    if (!inputAvailable(self)) {
+        return 0;
+    }
 #if defined TORNADO_OS_WINDOWS
     DWORD charactersRead;
 
@@ -35,8 +59,13 @@ static int read_key(RedlineTextInput* self)
     }
     return EOF;
 #else
-    (void) self;
-    return fgetc(self->stdIn);
+    char buffer;
+    ssize_t octetsRead = read(self->stdInFileDescriptor, &buffer, 1);
+    if (octetsRead > 0) {
+        return buffer;
+    }
+
+    return 0;
 #endif
 }
 

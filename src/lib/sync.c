@@ -30,6 +30,7 @@ void redlineSyncPrint(RedlineSync* self, const char* s, size_t x, size_t touched
     self->length = len;
     redlineAnsiCursorBack(self->pos_x - self->cursor_x);
     redlineAnsiColorReset();
+    fflush(stdout);
 }
 
 void redlineSyncInit(RedlineSync* self)

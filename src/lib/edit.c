@@ -16,14 +16,15 @@
 #if !defined TORNADO_OS_WINDOWS
 static void enable_raw_mode(RedlineEdit* self)
 {
-    self->stdInFileDescriptor = dup(STDIN_FILENO);
+    self->stdInFileDescriptor = STDIN_FILENO;
     tcgetattr(self->stdInFileDescriptor, &self->oldt);
     self->newt = self->oldt;
-    self->newt.c_iflag &= (tcflag_t) ~(INPCK | ISTRIP | IXON | IXOFF); // BRKINT
+    // self->newt.c_iflag &= (tcflag_t) ~(INPCK | ISTRIP | IXON | IXOFF); // BRKINT
+    // self->newt.c_lflag &= (tcflag_t) ~(ECHONL | ICANON | ECHO | );
     self->newt.c_lflag &= (tcflag_t) ~(ECHONL | ICANON | ECHO | IEXTEN);
     // newt.c_oflag &= ~(OPOST);
-    self->newt.c_cc[VMIN] = 1;
-    self->newt.c_cc[VTIME] = 0;
+    // self->newt.c_cc[VMIN] = 1; // needed when disabling icanon
+    // self->newt.c_cc[VTIME] = 0; // needed when disabling icanon
 
     tcsetattr(self->stdInFileDescriptor, TCSANOW, &self->newt);
 }
@@ -41,7 +42,6 @@ void redlineEditInit(RedlineEdit* self)
 {
 #if !defined TORNADO_OS_WINDOWS
     enable_raw_mode(self);
-    fcntl(self->stdInFileDescriptor, F_SETFL, fcntl(self->stdInFileDescriptor, F_GETFL) | O_NONBLOCK);
 #else
 #endif
     redlineAnsiInit();
