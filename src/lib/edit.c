@@ -19,7 +19,7 @@ static void enable_raw_mode(RedlineEdit* self)
     self->stdInFileDescriptor = dup(STDIN_FILENO);
     tcgetattr(self->stdInFileDescriptor, &self->oldt);
     self->newt = self->oldt;
-    self->newt.c_iflag &= (tcflag_t) ~(INPCK | ISTRIP | IXON); // BRKINT
+    self->newt.c_iflag &= (tcflag_t) ~(INPCK | ISTRIP | IXON | IXOFF); // BRKINT
     self->newt.c_lflag &= (tcflag_t) ~(ECHONL | ICANON | ECHO | IEXTEN);
     // newt.c_oflag &= ~(OPOST);
     self->newt.c_cc[VMIN] = 1;
