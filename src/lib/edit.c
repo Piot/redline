@@ -16,15 +16,16 @@
 #if !defined TORNADO_OS_WINDOWS
 static void enable_raw_mode(RedlineEdit* self)
 {
-    tcgetattr(STDIN_FILENO, &self->oldt);
+    self->stdInFileDescriptor = dup(STDIN_FILENO);
+    tcgetattr(self->stdInFileDescriptor, &self->oldt);
     self->newt = self->oldt;
     self->newt.c_iflag &= (tcflag_t) ~(INPCK | ISTRIP | IXON); // BRKINT
-    self->newt.c_lflag &= (tcflag_t)  ~(ECHONL | ICANON | ECHO | IEXTEN);
+    self->newt.c_lflag &= (tcflag_t) ~(ECHONL | ICANON | ECHO | IEXTEN);
     // newt.c_oflag &= ~(OPOST);
     self->newt.c_cc[VMIN] = 1;
     self->newt.c_cc[VTIME] = 0;
 
-    tcsetattr(STDIN_FILENO, TCSANOW, &self->newt);
+    tcsetattr(self->stdInFileDescriptor, TCSANOW, &self->newt);
 }
 #endif
 
@@ -32,7 +33,7 @@ static void restoreTermMode(RedlineEdit* self)
 {
     redlineAnsiColorReset();
 #if !defined TORNADO_OS_WINDOWS
-    tcsetattr(STDIN_FILENO, TCSANOW, &self->oldt);
+    tcsetattr(self->stdInFileDescriptor, TCSANOW, &self->oldt);
 #endif
 }
 
@@ -40,11 +41,11 @@ void redlineEditInit(RedlineEdit* self)
 {
 #if !defined TORNADO_OS_WINDOWS
     enable_raw_mode(self);
-    fcntl(0, F_SETFL, fcntl(0, F_GETFL) | O_NONBLOCK);
+    fcntl(self->stdInFileDescriptor, F_SETFL, fcntl(self->stdInFileDescriptor, F_GETFL) | O_NONBLOCK);
 #else
 #endif
     redlineAnsiInit();
-    redlineTextInputInit(&self->text_input);
+    redlineTextInputInit(&self->text_input, self->stdInFileDescriptor);
     redlineSyncInit(&self->sync);
 }
 

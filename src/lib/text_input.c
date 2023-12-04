@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <tiny-libc/tiny_libc.h>
+#include <fcntl.h>
 
 static int read_key(RedlineTextInput* self)
 {
@@ -35,7 +36,7 @@ static int read_key(RedlineTextInput* self)
     return EOF;
 #else
     (void) self;
-    return fgetc(stdin);
+    return fgetc(self->stdIn);
 #endif
 }
 
@@ -233,12 +234,15 @@ int redlineTextInputUpdate(RedlineTextInput* self)
     return 1;
 }
 
-void redlineTextInputInit(RedlineTextInput* self)
+void redlineTextInputInit(RedlineTextInput* self, int stdIn)
 {
     self->input_length = 0;
     self->max_length = 255;
     self->touched = 0;
     self->escape_phase = 0;
+    self->stdInFileDescriptor = stdIn;
+
+    self->stdIn = fdopen(self->stdInFileDescriptor, "r");
     redlineTextInputClear(self);
     redlineHistoryInit(&self->history);
 }

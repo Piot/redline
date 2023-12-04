@@ -17,6 +17,7 @@ typedef struct RedlineEdit {
 #if !defined TORNADO_OS_WINDOWS
     struct termios oldt, newt;
 #endif
+    int stdInFileDescriptor;
 } RedlineEdit;
 
 void redlineEditInit(RedlineEdit* self);

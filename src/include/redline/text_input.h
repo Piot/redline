@@ -6,7 +6,7 @@
 #define REDLINE_TEXT_INPUT_H
 
 #include <stddef.h>
-
+#include <stdio.h>
 #include "history.h"
 
 typedef struct RedlineTextInput {
@@ -17,9 +17,11 @@ typedef struct RedlineTextInput {
     int escape_phase;
     size_t touched;
     RedlineHistory history;
+    int stdInFileDescriptor;
+    FILE* stdIn;
 } RedlineTextInput;
 
-void redlineTextInputInit(RedlineTextInput* self);
+void redlineTextInputInit(RedlineTextInput* self, int stdInFileDescriptor);
 int redlineTextInputUpdate(RedlineTextInput* self);
 void redlineTextInputClear(RedlineTextInput* self);
 void redlineTextInputReset(RedlineTextInput* self);
